@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>마법의 수정구슬 - 마음을 읽는 마술</title>
+    <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Jua', sans-serif;
+            background-color: #fff0f5; 
+            margin: 0;
+            padding: 30px;
+            display: flex;
+            justify-content: center;
+            color: #333;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .main-container {
+            display: flex;
+            gap: 30px;
+            max-width: 1300px;
+            width: 100%;
+        }
+
+        .left-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 380px;
+            flex-shrink: 0;
+        }
+
+        .right-panel {
+            flex-grow: 1;
+            background-color: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            border: 4px solid #87cefa;
+            display: flex;
+            align-items: center;
+        }
+
+        .magic-zone {
+            background-color: white;
+            border-radius: 20px;
+            padding: 30px 20px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            border: 4px solid #ffd700;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .crystal-ball {
+            width: 220px;
+            height: 220px;
+            background: radial-gradient(circle at 30% 30%, #e0ffff, #87ceeb, #4169e1);
+            border-radius: 50%;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2), inset 0 -20px 40px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            cursor: pointer;
+            transition: transform 0.3s;
+            margin-bottom: 25px;
+            line-height: 1.4;
+            position: relative; 
+            overflow: hidden; 
+        }
+
+        .crystal-ball:hover {
+            transform: scale(1.05);
+        }
+
+        /* 수정구슬 안의 기호 가독성 극대화 */
+        #magic-symbol {
+            font-size: 7rem; /* 기호를 훨씬 더 크게 */
+            color: #d32f2f; /* 강렬한 빨간색 계열 */
+            text-shadow: 2px 2px 0 #fff, -2px -2px 0 #fff, 2px -2px 0 #fff, -2px 2px 0 #fff; /* 흰색 테두리로 뚜렷하게 */
+            opacity: 0; 
+            transition: opacity 1.5s ease-in-out; 
+        }
+
+        .crystal-ball.revealed #magic-symbol {
+            opacity: 1; 
+        }
+        
+        .crystal-ball.revealed {
+            background: radial-gradient(circle at 30% 30%, #fffacd, #ffd700, #ff8c00);
+            cursor: default;
+        }
+        
+        .crystal-ball #initial-text {
+            opacity: 1;
+            transition: opacity 0.5s;
+        }
+        
+        .crystal-ball.revealed #initial-text {
+            opacity: 0;
+            display: none;
+        }
+
+        .btn-restart {
+            background-color: #ff69b4;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1.3rem;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: background-color 0.3s;
+            font-family: 'Jua', sans-serif;
+            width: 100%;
+        }
+
+        .btn-restart:hover {
+            background-color: #ff1493;
+        }
+
+        .rules {
+            background-color: #ffffff;
+            border: 3px dashed #ffb6c1;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+            font-size: 1.15rem;
+            line-height: 1.5;
+        }
+
+        .rules h3 {
+            margin-top: 0;
+            color: #ff69b4;
+            text-align: center;
+            font-size: 1.4rem;
+        }
+
+        .rules ol {
+            padding-left: 25px;
+            margin-bottom: 0;
+        }
+
+        .rules li {
+            margin-bottom: 12px;
+        }
+
+        .rules strong {
+            color: #ff4500;
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 6px;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* 표 안의 아이템 가독성 업그레이드 */
+        .item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: #f0f8ff;
+            padding: 8px 10px; /* 여백 늘림 */
+            border-radius: 8px;
+            border: 1px solid #b0c4de;
+        }
+
+        .item span:first-child {
+            font-weight: bold;
+            color: #4682b4;
+            font-size: 1.2rem;
+        }
+
+        /* 기호만 따로 스타일링하여 눈에 띄게 만들기 */
+        .item span:last-child {
+            color: #d32f2f; /* 강렬한 색상 */
+            font-size: 1.5rem; /* 기호 크기 확대 */
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <audio id="magicSound" src="magic_sound.mp3" preload="auto"></audio>
+
+    <div class="main-container">
+        <div class="left-panel">
+            <div class="magic-zone">
+                <div class="crystal-ball" id="ball" onclick="revealMagic()">
+                    <div id="initial-text">
+                        마음을<br>읽어볼까요?<br>(클릭!)
+                    </div>
+                    <span id="magic-symbol"></span>
+                </div>
+                <button class="btn-restart" onclick="initGame()">🌟 새로운 마술 하기 🌟</button>
+            </div>
+
+            <div class="rules">
+                <h3>✨ 게임 방법 ✨</h3>
+                <ol>
+                    <li>마음속으로 <strong>두 자리 숫자</strong>를 아무거나 생각하세요.</li>
+                    <li>생각한 숫자의 <strong>십의 자리와 일의 자리를 더하세요.</strong></li>
+                    <li>처음 생각한 숫자에서 <strong>더해서 나온 숫자를 빼주세요.</strong></li>
+                    <li>오른쪽 표에서 <strong>계산된 숫자 옆의 기호</strong>를 찾아 꼭 기억하세요!</li>
+                    <li>준비가 되었다면, 위쪽의 <strong>수정구슬을 클릭</strong>해보세요!</li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="right-panel">
+            <div class="board" id="board">
+                </div>
+        </div>
+    </div>
+
+    <script>
+        // 가독성이 뛰어난 단순하고 명확한 특수기호 목록
+        const symbols = ['★', '■', '●', '♥', '♣', '♠', '◆', '▲', '▼', '◈', 
+                         '▣', '☆', '♡', '♧', '♤', '◇', '○', '□', '△', '▽', 
+                         '◎', '✖', '✚', '✤', '✦'];
+        
+        let targetSymbol = '';
+        let isRevealed = false;
+        
+        const magicSound = document.getElementById('magicSound');
+
+        function initGame() {
+            isRevealed = false;
+            const board = document.getElementById('board');
+            const ball = document.getElementById('ball');
+            const symbolSpan = document.getElementById('magic-symbol');
+            
+            board.innerHTML = '';
+            symbolSpan.innerHTML = ''; 
+            ball.classList.remove('revealed');
+            
+            magicSound.pause();
+            magicSound.currentTime = 0;
+
+            // 정답 기호 선정
+            targetSymbol = symbols[Math.floor(Math.random() * symbols.length)];
+
+            for(let i = 99; i >= 0; i--) {
+                let symbolForThisNumber = '';
+                
+                if(i % 9 === 0) {
+                    symbolForThisNumber = targetSymbol;
+                } else {
+                    symbolForThisNumber = symbols[Math.floor(Math.random() * symbols.length)];
+                }
+
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'item';
+                // span 태그로 감싸서 CSS로 기호만 글씨를 키우고 색을 바꿈
+                itemDiv.innerHTML = `<span>${i}</span> <span>${symbolForThisNumber}</span>`;
+                board.appendChild(itemDiv);
+            }
+        }
+
+        function revealMagic() {
+            if(isRevealed) return; 
+            
+            const ball = document.getElementById('ball');
+            const symbolSpan = document.getElementById('magic-symbol');
+            
+            magicSound.play().catch(e => console.log('사운드 파일을 찾을 수 없습니다.'));
+            
+            symbolSpan.innerHTML = targetSymbol;
+            ball.classList.add('revealed');
+            
+            isRevealed = true;
+        }
+
+        window.onload = initGame;
+    </script>
+
+</body>
+</html>
